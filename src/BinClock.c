@@ -32,9 +32,10 @@ int B_mins;
 void CleanUp(int sig){
 	printf("Cleaning up\n");
 
-	//Set LED to low then input mode
+	//Set LED to low then input mode	
+	digitalWrite(LED, 0);
+	pinMode(LED, INPUT);
 	
-
 
 	for (int j=0; j < sizeof(BTNS)/sizeof(BTNS[0]); j++) {
 		pinMode(BTNS[j],INPUT);
@@ -105,7 +106,7 @@ int main(void){
 	// Repeat this until we shut down
 	for (;;){
 		//Fetch the time from the RTC
-		hours = hexCompensation(wiringPiI2CReadReg8(RTC, HOUR_REGISTER));
+		hours =hexCompensation(wiringPiI2CReadReg8(RTC, HOUR_REGISTER));
 		mins = hexCompensation(wiringPiI2CReadReg8(RTC, MIN_REGISTER));
 		secs = hexCompensation(wiringPiI2CReadReg8(RTC, SEC_REGISTER));
 		
@@ -243,7 +244,7 @@ void minInc(void){
 		//Fetch RTC Time
 		MM = mins;
 		//Increase minutes by 1, ensuring not to overflow
-		if( MM < 60){
+		if( MM < 59){
 			MM= MM + 1;
 		}
 		else{
