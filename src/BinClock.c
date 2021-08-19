@@ -11,10 +11,11 @@
 
 #include <signal.h> //for catching signals
 #include <wiringPi.h>
+#include <string.h> // To provide us with strerror function
 #include <wiringPiI2C.h>
 #include <stdio.h> //For printf functions
 #include <stdlib.h> // For system functions
-
+#include <errno.h> // For compile/runtime errors
 #include "BinClock.h"
 #include "CurrentTime.h"
 
@@ -70,7 +71,42 @@ void initGPIO(void){
 		pinMode(BTNS[j], INPUT);
 		pullUpDnControl(BTNS[j], PUD_DOWN); //buttons initially to low
 	}
-	
+
+	//Attach interrupts to Buttons
+	//Write your logic here
+	// 	INT_EDGE_RISING 	INT_EDGE_FALLING	INT_EDGE_BOTH
+	// 	on btn press		on btn release		both
+	if ( wiringPiISR (BTNS[0], INT_EDGE_RISING, &hourInc) < 0 ) {
+     		fprintf (stderr, "Unable to setup ISR 1: %s\n", strerror (errno));
+      	//	exit(0);
+  	}
+
+	if ( wiringPiISR (BTNS[1], INT_EDGE_RISING, &minInc) < 0 ) {
+     		fprintf (stderr, "Unable to setup ISR 2: %s\n", strerror (errno));
+      	//	exit(0);
+  	}
+
+	//Interrupts
+	//these are pretty important because they are triggered in real time
+	//previously, we wrote code that checked if btn input = high,
+	//but there we noticed a delay,
+	//that's cos we were checking if button was pressed in main loop
+	//but now with interupts, it button clicks respond in real time
+	//almost as though there's a dedicated loop listening to changes in the input
+	//spend time researching more on interrupts, timers, etc
+	//more of great scott videos
+	//the resources that helped with completing this project are:
+	//
+	//https://pi4j.com/1.2/apidocs/com/pi4j/wiringpi/Gpio.html
+	//https://raspberrypi.stackexchange.com/questions/8544/gpio-interrupt-debounce
+	//https://raspberrypi.stackexchange.com/questions/54116/gpio-command-not-found
+	//https://vim.fandom.com/wiki/Copy,_cut_and_paste
+	//https://pi4j.com/1.2/apidocs/com/pi4j/wiringpi/Gpio.html
+	//MICRO CONTROLLER PROGRAMMING WITH C IS DOPE!
+
+
+		
+		
 
 	//changing button names for clarity
 	B_hours = BTNS[0];
@@ -104,14 +140,7 @@ int main(void){
 		hours =hexCompensation(wiringPiI2CReadReg8(RTC, HOUR_REGISTER));
 		mins = hexCompensation(wiringPiI2CReadReg8(RTC, MIN_REGISTER));
 		secs = hexCompensation(wiringPiI2CReadReg8(RTC, SEC_REGISTER));
-		
-		//checking if buttons have been pressed
-		if (digitalRead(B_hours)){
-			hourInc();
-		}
-		if (digitalRead(B_mins)){
-			minInc();
-		}
+
 
 		//Toggle Seconds LED
 		digitalWrite(LED, LED_status);
