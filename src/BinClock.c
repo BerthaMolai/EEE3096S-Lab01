@@ -5,8 +5,8 @@
  * Further Modified By: Mark Njoroge 
  *
  * 
- * <STUDNUM_1> <STUDNUM_2>
- * Date
+ * KBNGIV001 MLXBAT001
+ * 18/08/21
 */
 
 #include <signal.h> //for catching signals
@@ -76,12 +76,14 @@ void initGPIO(void){
 	//Write your logic here
 	// 	INT_EDGE_RISING 	INT_EDGE_FALLING	INT_EDGE_BOTH
 	// 	on btn press		on btn release		both
-	if ( wiringPiISR (BTNS[0], INT_EDGE_RISING, &hourInc) < 0 ) {
+	// 	choosing INT_EDGE_FALLING because that has shown the smoothest 
+	// 	transition when button was pressed
+	if ( wiringPiISR (BTNS[0], INT_EDGE_FALLING, &hourInc) < 0 ) {
      		fprintf (stderr, "Unable to setup ISR 1: %s\n", strerror (errno));
       	//	exit(0);
   	}
 
-	if ( wiringPiISR (BTNS[1], INT_EDGE_RISING, &minInc) < 0 ) {
+	if ( wiringPiISR (BTNS[1], INT_EDGE_FALLING, &minInc) < 0 ) {
      		fprintf (stderr, "Unable to setup ISR 2: %s\n", strerror (errno));
       	//	exit(0);
   	}
@@ -144,7 +146,8 @@ int main(void){
 
 		//Toggle Seconds LED
 		digitalWrite(LED, LED_status);
-		LED_status = !LED_status;
+		LED_status = !LED_status; //chnaging LED status each time we run through iteration.
+		//we already have a 1 second delay before next iteration so LED status will change every second
 		// Print out the time we have stored on our RTC
 		printf("The current time is: %d:%d:%d\n", hours, mins, secs);
 
